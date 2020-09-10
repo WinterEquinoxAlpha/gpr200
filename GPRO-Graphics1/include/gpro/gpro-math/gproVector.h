@@ -18,8 +18,11 @@
 	gproVector.h
 	Interface for vectors. Sets an example for C and C++ compatible headers.
 
-	Modified by: ____________
-	Modified because: ____________
+	Modified by: Michael Kashian
+	Modified because: Lab 1
+
+	Credit for code basis: Daniel Buckstein
+	Credit for code basis: Peter Shirley (2020) "Ray Tracing in One Weekend" (Version 3.2.0) [Source Code]. https://raytracing.github.io/books/RayTracingInOneWeekend.html#thevec3class/variablesandmethods
 */
 
 #ifndef _GPRO_VECTOR_H_
@@ -85,10 +88,12 @@ union vec3
 
 	vec3& operator /=(const float t);	// division assignment operator (divide other to this)
 
+	// Calculates the length of the vector
 	float length(vec3 const& v) const {
 		return sqrt(length_squared(v));
 	}
 
+	// Calculates the square of the length of the vector
 	float length_squared(vec3 const& v) const {
 		return v.x * v.x +v.y * v.y + v.z * v.z;
 	}

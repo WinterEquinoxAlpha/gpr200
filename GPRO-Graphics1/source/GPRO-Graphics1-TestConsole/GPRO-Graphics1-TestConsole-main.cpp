@@ -18,8 +18,11 @@
 	GPRO-Graphics1-TestConsole-main.c/.cpp
 	Main entry point source file for a Windows console application.
 
-	Modified by: ____________
-	Modified because: ____________
+	Modified by: Michael Kashian
+	Modified because: Lab 1
+
+	Credit for code basis: Daniel Buckstein
+	Credit for code basis: Peter Shirley (2020) "Ray Tracing in One Weekend" (Version 3.2.0) [Source Code]. https://raytracing.github.io/books/RayTracingInOneWeekend.html#thevec3class/variablesandmethods
 */
 
 
@@ -29,6 +32,9 @@
 
 #include "gpro/gpro-math/gproVector.h"
 #include "gpro/gpro-math/ray.h"
+#include "gpro/gpro-math/rtweekend.h"
+#include "gpro/gpro-math/hittable_list.h"
+#include "gpro/gpro-math/sphere.h"
 
 void testVector()
 {
@@ -65,50 +71,57 @@ void testVector()
 #include <stdio.h>
 #endif //__cplusplus
 
+// Writes out each pixel color to the given outstream
 void write_color(std::ostream& out, vec3 pixel_color) {
 	out << static_cast<int>(255.999 * pixel_color.x) << ' '
 		<< static_cast<int>(255.999 * pixel_color.y) << ' '
 		<< static_cast<int>(255.999 * pixel_color.z) << '\n';
 }
 
-/*
-bool hit_sphere(const vec3& center, float radius, const ray& r) {
+// Determines if and how many times a ray intersects with a sphere
+float hit_sphere(const vec3& center, float radius, const ray& r) {
 	vec3 oc = r.origin() - center;
-	float dot(r.direction(), r.direction());
-	float b = 2.0f * dot(oc, r.direction());
-	float c = dot(oc, oc) - radius * radius;
-	float discriminant = b * b - 4 * a * c;
-	return (discriminant > 0);
-}
-*/
-vec3 ray_color(const ray& r) {
-	/*
-	if (hit_sphere(vec3(0, 0, -1), 0.5, r)) {
-		return vec3(1, 0, 0);
+	float a = r.direction().length_squared(r.direction());
+	float half_b = dot(oc, r.direction());
+	float c = oc.length_squared(oc) - radius * radius;
+	float discriminant = half_b * half_b - a * c;
+
+	if (discriminant < 0) {
+		return -1.0f;	// If it does not hit, return 0
 	}
-	*/
+	else {
+		return (-half_b - sqrt(discriminant)) / a;	// If it does hit, return the number of hits
+	}
+}
+
+// Determines the color of the pixel given the ray's intersectors
+vec3 ray_color(const ray& r, const hittable& world) {
+	hit_record rec;
+	if (world.hit(r, 0, infinity, rec)) {
+		return 0.5f * (rec.normal + vec3(1.0f, 1.0f, 1.0f));
+	}
 	vec3 unit_direction = unit_vector(r.direction());
 	float t = 0.5f * (unit_direction.y + 1.0f);
 	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
 }
 
+// main function
 int main(int const argc, char const* const argv[])
 {
-	testVector();
+	//testVector();
 
 	#ifdef __cplusplus
-	/*
-	std::ofstream file("op.txt");
-	std::string test = "hello";
-	file << test << std::endl;
-	file.close();
-	system("pause");
-	*/
 
 	// Image
 	const float aspect_ratio = 16.0f / 9.0f;
 	const int image_width = 400;
 	const int image_height = static_cast<int>(image_width / aspect_ratio);
+
+	//World
+	hittable_list world;
+	// Adding the objects to the scene
+	world.add(make_shared<sphere>(vec3(0.0f, 0.0f, -1.0f), 0.5f));
+	world.add(make_shared<sphere>(vec3(0.0f, -100.5f, -1.0f), 100.0f));
 
 	// Camera
 	float viewport_height = 2.0f;
@@ -121,10 +134,11 @@ int main(int const argc, char const* const argv[])
 	vec3 lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0.0f, 0.0f, focal_length);
 
 	// Render
+	// Opens the output file and writes the header
 	std::ofstream outfile("image.ppm");
-
 	outfile << "P3\n" << image_width << " " << image_height << "\n255\n";
 
+	// Loops through evey pixel in the image, determiens their color, and writes them to the file
 	for (int j = image_height - 1; j >= 0; j--)
 	{
 		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
@@ -132,30 +146,14 @@ int main(int const argc, char const* const argv[])
 		{
 			float u = float(i) / (image_width - 1);
 			float v = float(j) / (image_height - 1);
-			ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-			vec3 pixel_color = ray_color(r);
+			ray r(origin, lower_left_corner + u * horizontal + v * vertical);
+			vec3 pixel_color = ray_color(r, world);
 			write_color(outfile, pixel_color);
-
-			/*
-			double r = double(i) / (image_width - 1);
-			double g = double(j) / (image_height - 1);
-			double b = 0.6;
-
-			int ir = static_cast<int>(255.999 * r);
-			int ig = static_cast<int>(255.999 * g);
-			int ib = static_cast<int>(255.999 * b);
-			outfile << ir << ' ' << ig << ' ' << ib << "\n";
-			*/
 		}
 	}
+	// Closes file
 	outfile.close();
-	system("pause");
-
-
-
-
-
-
+	
 	#else //!__cplusplus
 	FILE* file = fopen("op.txt", "w");
 	if (file) {
