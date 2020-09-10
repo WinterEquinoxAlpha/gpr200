@@ -25,10 +25,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <iostream>
 
 #include "gpro/gpro-math/gproVector.h"
-
 
 void testVector()
 {
@@ -50,13 +49,64 @@ void testVector()
 	d = b + b;										// sum, init, assign			-> d = (2, 4, 6)
 	d = c + b + a;									// sum, init, sum, init, assign	-> d = (9, 12, 15)
 #endif	// __cplusplus
+
+	vec3 test;
+	vec3init(test.v, 1.0f, 2.0f, 3.0f);
+	//printf("%f \n", test.x);
 }
 
+#ifdef __cplusplus
+// For opening and writing to a file in C++
+#include <string>
+#include <fstream>
+#else //!__cplusplus
+// For opening and writing to a file in C
+#include <stdio.h>
+#endif //__cplusplus
 
 int main(int const argc, char const* const argv[])
 {
 	testVector();
 
-	printf("\n\n");
+	#ifdef __cplusplus
+	/*
+	std::ofstream file("op.txt");
+	std::string test = "hello";
+	file << test << std::endl;
+	file.close();
 	system("pause");
+	*/
+	const int image_width = 256;
+	const int image_height = 256;
+
+	std::ofstream outfile("image.ppm");
+
+	outfile << "P3\n" << image_width << " " << image_height << "\n255\n";
+
+	for (int j = 0; j < image_height; j++)
+	{
+		std::cerr << "\rScanlines remaining: " << image_height - j << " " << std::flush;
+		for (int i = 0; i < image_width; i++)
+		{
+			double r = double(i) / (image_width - 1);
+			double g = double(j) / (image_height - 1);
+			double b = 0.6;
+
+			int ir = static_cast<int>(255.999 * r);
+			int ig = static_cast<int>(255.999 * g);
+			int ib = static_cast<int>(255.999 * b);
+			outfile << ir << ' ' << ig << ' ' << ib << "\n";
+		}
+	}
+	outfile.close();
+
+	#else //!__cplusplus
+	FILE* file = fopen("op.txt", "w");
+	if (file) {
+		char* test = "hello";
+		fprintf(file, "%s\n", test);
+		close(file);
+	}
+
+	#endif //__cplusplus
 }
