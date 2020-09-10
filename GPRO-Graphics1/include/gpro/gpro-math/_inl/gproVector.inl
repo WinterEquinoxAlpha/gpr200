@@ -67,6 +67,68 @@ inline vec3 const vec3::operator +(vec3 const& rh) const
 	return vec3((x + rh.x), (y + rh.y), (z + rh.z));
 }
 
+inline vec3& vec3::operator -=(vec3 const& rh)
+{
+	x -= rh.x;
+	y -= rh.y;
+	z -= rh.z;
+	return *this;
+}
+
+inline vec3 const vec3::operator -(vec3 const& rh) const
+{
+	return vec3((x - rh.x), (y - rh.y), (z - rh.z));
+}
+
+inline vec3 operator *(const vec3& lh, const vec3& rh)
+{
+	return vec3(lh.x * rh.x, lh.y * rh.y, lh.z * rh.z);
+}
+
+inline vec3 operator *(float lh, const vec3& rh)
+{
+	return vec3(lh * rh.x, lh * rh.y, lh * rh.z);
+}
+
+inline vec3 operator *(const vec3& lh, float rh)
+{
+	return rh * lh;
+}
+
+inline vec3& vec3::operator *=(const float t)
+{
+	x *= t;
+	y *= t;
+	z *= t;
+	return *this;
+}
+
+inline vec3& vec3::operator /=(const float t)
+{
+	return *this *= 1 / t;
+}
+
+inline vec3 operator/(vec3 v, float t) {
+	return (1 / t) * v;
+}
+
+inline vec3 unit_vector(vec3 v)
+{
+	return v / v.length(v);
+}
+
+inline float dot(const vec3& lh, const vec3& rh) {
+	return lh.x * rh.x
+		+ lh.y * rh.y
+		+ lh.z * rh.z;
+}
+
+inline vec3 cross(const vec3& rh, const vec3& lh) {
+	return vec3(lh.y * rh.z - rh.z * lh.y,
+		lh.z * rh.x - lh.x * rh.z,
+		lh.x * rh.y - lh.y * rh.x);
+}
+
 #endif	// __cplusplus
 
 

@@ -25,6 +25,7 @@
 #ifndef _GPRO_VECTOR_H_
 #define _GPRO_VECTOR_H_
 
+#include <math.h>
 
 #ifdef __cplusplus
 // DB: link C++ symbols as if they are C where possible
@@ -75,6 +76,22 @@ union vec3
 	vec3& operator +=(vec3 const& rh);	// addition assignment operator (add other to this)
 
 	vec3 const operator +(vec3 const& rh) const;	// addition operator (get sum of this and another)
+
+	vec3& operator -=(vec3 const& rh);	// subtraction assignment operator (subtract other to this)
+
+	vec3 const operator -(vec3 const& rh) const;	// subtraction operator (get difference of this and another)
+
+	vec3& operator *=(const float t);	// multiplication assignment operator (multipliy other to this)
+
+	vec3& operator /=(const float t);	// division assignment operator (divide other to this)
+
+	float length(vec3 const& v) const {
+		return sqrt(length_squared(v));
+	}
+
+	float length_squared(vec3 const& v) const {
+		return v.x * v.x +v.y * v.y + v.z * v.z;
+	}
 
 #endif	// __cplusplus
 };
