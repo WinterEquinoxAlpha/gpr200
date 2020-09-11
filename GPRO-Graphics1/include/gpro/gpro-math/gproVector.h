@@ -89,11 +89,15 @@ union vec3
 	vec3& operator /=(const float t);	// division assignment operator (divide other to this)
 
 	// Calculates the length of the vector
+	// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+	// Modified by: Michael Kashian
 	float length(vec3 const& v) const {
 		return sqrt(length_squared(v));
 	}
 
 	// Calculates the square of the length of the vector
+	// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+	// Modified by: Michael Kashian
 	float length_squared(vec3 const& v) const {
 		return v.x * v.x +v.y * v.y + v.z * v.z;
 	}

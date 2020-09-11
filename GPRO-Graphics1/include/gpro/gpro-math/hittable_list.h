@@ -14,6 +14,8 @@
 #include <vector>
 
 // Prevents having to put std:: in front of all the things
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 using std::shared_ptr;
 using std::make_shared;
 
@@ -32,6 +34,8 @@ public:
 };
 
 // hit function implementation
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 bool hittable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
     hit_record temp_rec;
     bool hit_anything = false;

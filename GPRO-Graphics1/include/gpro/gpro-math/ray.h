@@ -11,6 +11,8 @@
 
 #include "gpro/gpro-math/gproVector.h"
 
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 class ray {
 public:
     ray() {}    // Default constructor
@@ -20,6 +22,8 @@ public:
     vec3 direction() const { return dir; }  // Returns dir
 
     // Calculates point on the vector at a given t
+    // Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+    // Modified by: Michael Kashian
     vec3 at(float t) const {
         return orig + t * dir;
     }

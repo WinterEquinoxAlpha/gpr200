@@ -72,6 +72,8 @@ void testVector()
 #endif //__cplusplus
 
 // Writes out each pixel color to the given outstream
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 void write_color(std::ostream& out, vec3 pixel_color) {
 	out << static_cast<int>(255.999 * pixel_color.x) << ' '
 		<< static_cast<int>(255.999 * pixel_color.y) << ' '
@@ -79,6 +81,8 @@ void write_color(std::ostream& out, vec3 pixel_color) {
 }
 
 // Determines if and how many times a ray intersects with a sphere
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 float hit_sphere(const vec3& center, float radius, const ray& r) {
 	vec3 oc = r.origin() - center;
 	float a = r.direction().length_squared(r.direction());
@@ -95,6 +99,8 @@ float hit_sphere(const vec3& center, float radius, const ray& r) {
 }
 
 // Determines the color of the pixel given the ray's intersectors
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 vec3 ray_color(const ray& r, const hittable& world) {
 	hit_record rec;
 	if (world.hit(r, 0, infinity, rec)) {
@@ -112,6 +118,8 @@ int main(int const argc, char const* const argv[])
 
 	#ifdef __cplusplus
 
+	// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+	// Modified by: Michael Kashian
 	// Image
 	const float aspect_ratio = 16.0f / 9.0f;
 	const int image_width = 400;
@@ -139,6 +147,8 @@ int main(int const argc, char const* const argv[])
 	outfile << "P3\n" << image_width << " " << image_height << "\n255\n";
 
 	// Loops through evey pixel in the image, determiens their color, and writes them to the file
+	// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+	// Modified by: Michael Kashian
 	for (int j = image_height - 1; j >= 0; j--)
 	{
 		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;

@@ -84,18 +84,24 @@ inline vec3 const vec3::operator -(vec3 const& rh) const
 }
 
 // Multiplication of two vec3s
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 inline vec3 operator *(const vec3& lh, const vec3& rh)
 {
 	return vec3(lh.x * rh.x, lh.y * rh.y, lh.z * rh.z);
 }
 
 // Multiplication of a constant and a vec3
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 inline vec3 operator *(float lh, const vec3& rh)
 {
 	return vec3(lh * rh.x, lh * rh.y, lh * rh.z);
 }
 
 // Multiplication of a constant and a vec3 but in reverse order
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 inline vec3 operator *(const vec3& lh, float rh)
 {
 	return rh * lh;
@@ -115,17 +121,23 @@ inline vec3& vec3::operator /=(const float t)
 }
 
 // division operator (get quotient of this and another)
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 inline vec3 operator /(vec3 v, float t) {
 	return (1 / t) * v;
 }
 
 // Caluclates the unit vector for a given vec3
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 inline vec3 unit_vector(vec3 v)
 {
 	return v / v.length(v);
 }
 
 // Calculates the dot produce for a given vec3
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 inline float dot(const vec3& lh, const vec3& rh) {
 	return lh.x * rh.x
 		+ lh.y * rh.y
@@ -133,6 +145,8 @@ inline float dot(const vec3& lh, const vec3& rh) {
 }
 
 // Calculates the cross produce for a given vec3
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 inline vec3 cross(const vec3& rh, const vec3& lh) {
 	return vec3(lh.y * rh.z - rh.z * lh.y,
 		lh.z * rh.x - lh.x * rh.z,

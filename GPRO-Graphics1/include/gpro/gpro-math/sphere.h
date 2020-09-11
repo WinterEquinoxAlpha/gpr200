@@ -12,6 +12,8 @@
 #include "gpro/gpro-math/hittable.h"
 #include "gpro/gpro-math/gproVector.h"
 
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 class sphere : public hittable {
 public:
     sphere() {} // Default constructor
@@ -25,6 +27,8 @@ public:
 };
 
 // hit function implementation
+// Original Code: Peter Shirley (2020) "Ray Tracing in One Weekend"
+// Modified by: Michael Kashian
 bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
     vec3 oc = r.origin() - center;
     float a = r.direction().length_squared(r.direction());
