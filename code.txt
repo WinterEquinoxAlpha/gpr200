@@ -9,6 +9,22 @@ vec4 myEffect0( in vec2 fragCoord, in vec2 resolution )
     return vec4(uv, 0.5, 1.0);
 }
 
+vec4 myEffect1( in vec2 fragCoord, in float squareSize )
+{
+    // Calculates the column position of the pixel
+    float pixelColumnPosition = floor(mod(fragCoord.x, squareSize));
+    // Calculates the row position of the pixel
+    float pixelRowPosition = floor(mod(fragCoord.y, squareSize));
+    
+    // Determines if the row and column of the pixel should be black or white and sets it accordingly
+    if ((pixelColumnPosition <= squareSize / 2.0 && pixelRowPosition > squareSize / 2.0) || (pixelRowPosition <= squareSize / 2.0 && pixelColumnPosition > squareSize / 2.0))
+    {
+        return vec4(0, 0, 0, 1);
+    } else {
+        return vec4(1, 1, 1, 1);
+    }
+}
+
 vec4 myEffect2( in vec2 fragCoord, in vec2 resolution, in float time, in float startRadius, in float endRadius )
 {
     // Calculates the radius of the circle based on the time and the start and end radii
@@ -49,5 +65,6 @@ vec4 myEffect2( in vec2 fragCoord, in vec2 resolution, in float time, in float s
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     //fragColor = myEffect0(fragCoord, iResolution.xy);
-	fragColor = myEffect1(fragCoord, 100.0);
+	//fragColor = myEffect1(fragCoord, 100.0);
+	fragColor = myEffect2(fragCoord, iResolution.xy, iTime, 100.0, 200.0);
 }
