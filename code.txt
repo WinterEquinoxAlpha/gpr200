@@ -1,0 +1,22 @@
+#define colorRGB vec3
+
+// Starter code from Daniel Buckstein
+// Modified by Michael Kashian
+vec4 myEffect0( in vec2 fragCoord, in vec2 resolution )
+{
+    // Calculates the color vector
+    vec2 uv = fragCoord / resolution;
+    return vec4(uv, 0.5, 1.0);
+}
+
+// mainImage: calculate and pass final display color of current pixel
+//  fragColor: final color to be displayed; assigned by function
+//    (4D vector representing a color in RGBA format)https://www.shadertoy.com/img/themes/classic/help.png
+//  fragCoord: coordinate of current pixel being processed
+//    (2D vector representing the location of the pixel in the image)
+//      x: between zero and horizontal display resolution (zero is left side of image)
+//      y: between zero and vertical display resolution (zero is bottom of image)
+void mainImage(out vec4 fragColor, in vec2 fragCoord)
+{
+    fragColor = myEffect0(fragCoord, iResolution.xy);
+}
