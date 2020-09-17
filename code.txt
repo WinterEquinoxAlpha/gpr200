@@ -1,4 +1,6 @@
 #define colorRGB vec3
+#define PI 3.14159265358979323846264338327950288419
+#define PHI 1.61803398874989484820459
 
 // Starter code from Daniel Buckstein
 // Modified by Michael Kashian
@@ -55,6 +57,88 @@ vec4 myEffect2( in vec2 fragCoord, in vec2 resolution, in float time, in float s
     }
 }
 
+// Calculates the linear Interpolation value for the mix() function based on a start and end point on the screen
+float findLerp( in float start, in float end, in vec2 fragCoord)
+{
+    float dnom = end - start;
+    return (fragCoord.y / dnom) - (start / dnom);
+}
+
+// RNG code from "Gold Noise Uniform Random Static" by dcerisano
+// https://www.shadertoy.com/view/ltB3zD
+// Modified by Michael Kashian
+float random(in vec2 xy, in float seed)
+{
+    return fract(tan(distance(xy * PHI, xy) * seed) * xy.x);
+}
+
+
+vec4 myEffect3(in vec2 fragCoord, in vec2 resolution, in float time, in float seed )
+{
+    vec4 finalColor;	// The color returned by the function
+    float radius = resolution.y / 4.0;	// The radius of the sun
+    float groundHeight = resolution.y / 3.0;	// The height of the ground
+    float centerOfSky = (resolution.y + groundHeight) / 2.0;	// The center of the sky above the ground
+    float yPos = mod(resolution.y / 2.0 - time * 100.0, resolution.y + radius);	// The y-position of the sun
+    vec2 center = vec2(yPos * (resolution.x / resolution.y), yPos);	// The center of the sun
+    
+    // Determines what part of the image the pixel is part of
+    // If the pixel is below the ground height...
+    if (fragCoord.y < groundHeight)
+    {
+        // Ground
+        
+        // Determines the color of the gradient
+        float lerp = findLerp(groundHeight, 0.0, fragCoord);
+        // Determines how bright the ground should be based on the position of the sun
+        float colorPercent = (((resolution.y + radius) - centerOfSky) - distance(center.y, centerOfSky)) / ((resolution.y + radius) - centerOfSky);
+        // Sets the pixel's color based on the two above statements
+        finalColor = vec4(mix(colorPercent * 1.0, colorPercent * 0.1, lerp), mix(colorPercent * 0.19, colorPercent * 0.1, lerp), mix(colorPercent * 0.87, colorPercent * 0.3, lerp), 1.0);
+    }
+    // If the pixel is within the radius of the sun and does not fall on certian lines...
+    else if (distance(fragCoord, center) <= radius && distance(fragCoord.y, center.y) > 1.0 && distance(fragCoord.y, center.y - radius / 6.0) > 1.5 && distance(fragCoord.y, center.y - radius / 3.0) > 2.0 && distance(fragCoord.y, center.y - radius / 2.0) > 4.0 && distance(fragCoord.y, center.y - radius / 1.4) > 6.0) {
+        // Sun
+        
+        // Determines the color of the gradient
+        float lerp = findLerp(center.y - radius, center.y + radius, fragCoord);
+        // Sets the pixel's color based on the above statement
+        finalColor = vec4(mix(0.878, 0.93, lerp), mix(0.117, 0.55, lerp), mix(0.596, 0.39, lerp), 1.0);
+    }
+    // If the pixel is above the ground and not in the sun...
+    else {
+        // Sky
+        
+        // Determines the color of the gradient
+        float lerp = findLerp(resolution.y, groundHeight, fragCoord);
+        // Sets the pixel's color based on the above statement
+        finalColor = vec4(mix(0.1, 0.7, lerp), 0.0, mix(0.3, 0.59, lerp), 1.0);
+        
+        // Stars
+        
+        // List of points for stars
+        vec2 points[100];
+        // Go throught the array and set each vector to a random point on the screen
+        for (int i = 0; i < points.length(); i++)
+        {
+            float rnd1 = random(vec2(i, i), fract(seed) + 1.0);
+            float rnd2 = random(vec2(i, i), fract(seed) + 2.0);
+            points[i] = vec2(iResolution.x * rnd1, mod((iResolution.y * rnd2) + (time * 1000.0), resolution.y));
+        }
+        
+        // The size of the stars
+        float starRadius = 2.0;
+        // Go through each point and determine if the pixel is close enough to it to be a star
+        for (int i = 0; i < points.length(); i++)
+    	{
+            if (distance(fragCoord, points[i]) <= starRadius)
+            {
+                finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+            }
+        }
+    }
+    return finalColor;
+}
+
 // mainImage: calculate and pass final display color of current pixel
 //  fragColor: final color to be displayed; assigned by function
 //    (4D vector representing a color in RGBA format)https://www.shadertoy.com/img/themes/classic/help.png
@@ -64,7 +148,8 @@ vec4 myEffect2( in vec2 fragCoord, in vec2 resolution, in float time, in float s
 //      y: between zero and vertical display resolution (zero is bottom of image)
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
-    //fragColor = myEffect0(fragCoord, iResolution.xy);
-	//fragColor = myEffect1(fragCoord, 100.0);
-	fragColor = myEffect2(fragCoord, iResolution.xy, iTime, 100.0, 200.0);
+    fragColor = myEffect0(fragCoord, iResolution.xy);
+    //fragColor = myEffect1(fragCoord, 100.0);
+    //fragColor = myEffect2(fragCoord, iResolution.xy, iTime, 100.0, 200.0);
+    //fragColor = myEffect3(fragCoord, iResolution.xy, iTime, iResolution.x);
 }
