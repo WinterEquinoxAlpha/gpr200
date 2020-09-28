@@ -66,7 +66,7 @@ struct sSphere {
     float radius;
 };
 
-struct pointLight {
+struct sPointLight {
     vec4 center;
     vec3 color;
     float intensity;
@@ -82,7 +82,7 @@ bool initSphere(out sSphere sphere, in vec3 center, in float radius) {
     return false;
 }
 
-void initPointLight(out pointLight pl, in vec3 center, in vec3 color, in float intensity) {
+void initPointLight(out sPointLight pl, in vec3 center, in vec3 color, in float intensity) {
     pl.center = asPoint(center);
     pl.color = color;
     pl.intensity = intensity;
@@ -90,6 +90,52 @@ void initPointLight(out pointLight pl, in vec3 center, in vec3 color, in float i
 
 float lenSq(vec2 x) {
     return dot(x, x);
+}
+
+void calcPointLight(out float diffuseIntensity, out float specularIntensity, in sPointLight pl, in sSphere sphere, in vec4 rayDirection, in vec4 rayOrigin) {
+    // Basic Variables
+    vec3 lightPosition = pl.center.xyz;
+    float t = 2.0;
+	vec3 surfacePosition = rayOrigin.xyz + t * rayDirection.xyz;
+    
+    
+    // Lambertian Reflectance
+    // Diffuse Coefficient
+    vec3 unitSurfaceNormal = normalize(surfacePosition - sphere.center.xyz);
+    vec3 uniLightVector = normalize(lightPosition - surfacePosition);
+    float diffuseCoefficient = max(0.0, dot(unitSurfaceNormal, uniLightVector));
+
+    // Attenuated Intensity
+    float d = distance(lightPosition, surfacePosition);
+    float attenuatedIntensity = 1.0 / (1.0 + (d / pl.intensity) + ((d * d) / (pl.intensity * pl.intensity)));
+
+    // Diffuse Intensity
+    diffuseIntensity = diffuseCoefficient * attenuatedIntensity;
+
+
+    /*
+    // Phong Reflectance
+    // Specular Coefficient
+    vec3 viewVector = normalize(rayOrigin.xyz - surfacePosition);
+    vec3 reflectedLightVector = reflect(-uniLightVector, unitSurfaceNormal);
+    float specularCoefficient = max(0.0, dot(viewVector, reflectedLightVector));
+
+    // Highlight Exponent
+    float highlightExponent = 64.0;
+    */
+
+
+    // Blinn-Phong Reflectance
+    // Specular Coefficient
+    vec3 viewVector = normalize(rayOrigin.xyz - surfacePosition);
+    vec3 halfwayVector = normalize(uniLightVector + viewVector);
+    float specularCoefficient = dot(unitSurfaceNormal, halfwayVector);
+
+    // Highlight Exponent
+    float highlightExponent = 4.0 * 64.0;
+
+    // Specular Intensity
+    specularIntensity = pow(specularCoefficient, highlightExponent);
 }
 
 // calcColor: calculate the color of a pixel given a ray
@@ -100,10 +146,9 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     // SCENE
     sSphere sphere;
     initSphere(sphere, vec3(0.0, 0.0, -3.0), 0.5);
-    pointLight pl;
-    //vec2 mousePos = vec2(iMouse.x - 0.5 * iResolution.x, iMouse.y - 0.5 * iResolution.y)  / iResolution.xy;
-    //initPointLight(pl, vec3(mousePos, 0.0), vec3(1.0, 1.0, 1.0), 5.0);
-    initPointLight(pl, vec3(1.25, 1.25, 0.0), vec3(1.0, 1.0, 1.0), 10.0);
+    sPointLight pointLights[2];
+    initPointLight(pointLights[0], vec3(1.25, 1.25, 0.0), vec3(1.0, 1.0, 1.0), 5.0);
+    initPointLight(pointLights[1], vec3(-1.25, -1.25, 0.0), vec3(1.0, 1.0, 1.0), 5.0);
     
     // Testing proc sphere
     vec3 dp;
@@ -120,63 +165,20 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
         vec3 sphereColor = vec3(normal * 0.5 + 0.5);
         //vec3 sphereColor = vec3(0.7, 0.7, 0.7);
         
-        
-        // LIGHTING
-        // Basic Variables
-        vec3 lightPosition = pl.center.xyz;
-        float t = 2.0;
-        vec3 surfacePosition = rayOrigin.xyz + t * rayDirection.xyz;
-        
-        
-        // Lambertian Reflectance
-        // Diffuse Coefficient
-        vec3 unitSurfaceNormal = normalize(surfacePosition - sphere.center.xyz);
-        vec3 uniLightVector = normalize(lightPosition - surfacePosition);
-        float diffuseCoefficient = max(0.0, dot(unitSurfaceNormal, uniLightVector));
-        
-        // Attenuated Intensity
-        float d = distance(lightPosition, surfacePosition);
-        float attenuatedIntensity = 1.0 / (1.0 + (d / pl.intensity) + ((d * d) / (pl.intensity * pl.intensity)));
-        
-        // Diffuse Intensity
-        float diffuseIntensity = diffuseCoefficient * attenuatedIntensity;
-        
-        
-        /*
-        // Phong Reflectance
-        // Specular Coefficient
-        vec3 viewVector = normalize(rayOrigin.xyz - surfacePosition);
-        vec3 reflectedLightVector = reflect(-uniLightVector, unitSurfaceNormal);
-        float specularCoefficient = max(0.0, dot(viewVector, reflectedLightVector));
-        
-        // Highlight Exponent
-        float highlightExponent = 64.0;
-        */
-        
-        
-        // Blinn-Phong Reflectance
-        // Specular Coefficient
-        vec3 viewVector = normalize(rayOrigin.xyz - surfacePosition);
-        vec3 halfwayVector = normalize(uniLightVector + viewVector);
-        float specularCoefficient = dot(unitSurfaceNormal, halfwayVector);
-        
-        // Highlight Exponent
-        float highlightExponent = 4.0 * 64.0;
-        
-        // Specular Intensity
-        float specularIntensity = pow(specularCoefficient, highlightExponent);
-        
-        // Specular Color
-        vec3 specularColor = vec3(1.0, 1.0, 1.0);
-        
-        
-        // Final Colors
-        // Ambient Light
+        // Lighting
+    	vec3 specularColor = vec3(1.0, 1.0, 1.0);
         float globalAmbientIntensity = 0.05;
-        vec3 globalAmbientColor = vec3(0.0, 1.0, 1.0);
+        vec3 globalAmbientColor = vec3(1.0, 1.0, 1.0);
+        
+        vec3 lightingInstensitySum = vec3(0.0, 0.0, 0.0);
+        for (int i = pointLights.length() - 1; i >= 0; --i) {
+            float diffuseIntensity, specularIntensity;
+        	calcPointLight(diffuseIntensity, specularIntensity, pointLights[i], sphere, rayDirection, rayOrigin);
+            lightingInstensitySum += ((diffuseIntensity * sphereColor) + (specularIntensity * specularColor)) * pointLights[i].color;
+        }
         
         // Final Color
-        vec3 finalColor = (globalAmbientIntensity * globalAmbientColor) + ((diffuseIntensity * sphereColor) + (specularIntensity * specularColor)) * pl.color;
+        vec3 finalColor = (globalAmbientIntensity * globalAmbientColor) + lightingInstensitySum;
         return vec4(finalColor, 1.0);
     }
     
