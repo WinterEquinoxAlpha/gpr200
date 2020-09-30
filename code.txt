@@ -1,3 +1,5 @@
+#define PI 3.14159265
+
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
 
 // asPoint: promote a 3D vector into a 4D vector representing a point (w=1)
@@ -61,17 +63,23 @@ void calcRay(out vec4 rayDirection, out vec4 rayOrigin,
     rayDirection = asOffset(viewport - eyePosition);
 }
 
+// A struct containing variables for a sphere
 struct sSphere {
     vec4 center;
     float radius;
 };
 
+// A struct containing variables for a point light
 struct sPointLight {
     vec4 center;
     vec3 color;
     float intensity;
 };
 
+// Initializes a sphere struct variables with the data passed into the function
+//		sphere: the sphere to be initialized
+//		center: the position of the center of the sphere
+//		radius: the radius of the sphere
 bool initSphere(out sSphere sphere, in vec3 center, in float radius) {
     sphere.center = asPoint(center);
     if (radius > 0.0) {
@@ -82,16 +90,31 @@ bool initSphere(out sSphere sphere, in vec3 center, in float radius) {
     return false;
 }
 
+// Initializes a point light struct variables with the data passed into the function
+//		pl: the point light to be initialized
+//		center: the position of the center of the light
+//		color: the color of the light
+//		intensity: the intensity of the light
 void initPointLight(out sPointLight pl, in vec3 center, in vec3 color, in float intensity) {
     pl.center = asPoint(center);
     pl.color = color;
     pl.intensity = intensity;
 }
 
+// Returns the dot product of a 2D vector
+// Original code by Daniel Buckstein
 float lenSq(vec2 x) {
     return dot(x, x);
 }
 
+// Returns the dot product of a 3D vector
+// Original code by Daniel Buckstein
+// Modified by Michael Kashian
+float lenSq(vec3 x) {
+    return dot(x, x);
+}
+
+// Returns the input variable raised to the 256 power
 float pow256(in float specularCoefficient) {
     float sc = specularCoefficient;
     sc *= sc;
@@ -105,6 +128,7 @@ float pow256(in float specularCoefficient) {
     return sc;
 }
 
+// Calculates the diffuseIntensity and specularIntensity for a given light on a sphere
 void calcPointLight(out float diffuseIntensity, out float specularIntensity, in sPointLight pl, in sSphere sphere, in vec3 surfacePosition, in vec4 rayOrigin) {
     // Basic Variables
     vec3 lightPosition = pl.center.xyz;
@@ -112,13 +136,19 @@ void calcPointLight(out float diffuseIntensity, out float specularIntensity, in 
     
     // Lambertian Reflectance
     // Diffuse Coefficient
-    vec3 unitSurfaceNormal = normalize(surfacePosition - sphere.center.xyz);
-    vec3 uniLightVector = normalize(lightPosition - surfacePosition);
-    float diffuseCoefficient = max(0.0, dot(unitSurfaceNormal, uniLightVector));
+    //vec3 unitSurfaceNormal = normalize(surfacePosition - sphere.center.xyz);
+    vec3 unitSurfaceNormal = (surfacePosition - sphere.center.xyz) / sphere.radius;
+    //vec3 unitLightVector = normalize(lightPosition - surfacePosition);
+    vec3 LightVector = lightPosition - surfacePosition;
+    //float d = distance(lightPosition, surfacePosition);
+    float d = sqrt(lenSq(LightVector));
+	vec3 unitLightVector = LightVector / d;
+    float diffuseCoefficient = max(0.0, dot(unitSurfaceNormal, unitLightVector));
 
     // Attenuated Intensity
-    float d = distance(lightPosition, surfacePosition);
-    float attenuatedIntensity = 1.0 / (1.0 + (d / pl.intensity) + ((d * d) / (pl.intensity * pl.intensity)));
+    float inverseIntensity = 1.0 / pl.intensity;
+    //float attenuatedIntensity = 1.0 / (1.0 + (d / pl.intensity) + ((d * d) / (pl.intensity * pl.intensity)));
+    float attenuatedIntensity = 1.0 / (1.0 + (d * inverseIntensity) + ((d * d) * (inverseIntensity * inverseIntensity)));
 
     // Diffuse Intensity
     diffuseIntensity = diffuseCoefficient * attenuatedIntensity;
@@ -136,26 +166,32 @@ void calcPointLight(out float diffuseIntensity, out float specularIntensity, in 
     // Blinn-Phong Reflectance
     // Specular Coefficient
     vec3 viewVector = normalize(rayOrigin.xyz - surfacePosition);
-    vec3 halfwayVector = normalize(uniLightVector + viewVector);
+    vec3 halfwayVector = normalize(unitLightVector + viewVector);
     float specularCoefficient = max(0.0, dot(unitSurfaceNormal, halfwayVector));
 	
     // Specular Intensity
+    //specularIntensity = pow(specularCoefficient, 256);
     specularIntensity = pow256(specularCoefficient);
-    
-    
 }
 
 // calcColor: calculate the color of a pixel given a ray
 //    rayDirection: input ray direction
 //    rayOrigin:    input ray origin
-vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
+vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin, in float time, in vec4 mouse, in vec2 res)
 {	
     // SCENE
+    // Initialize sphere
     sSphere sphere;
     initSphere(sphere, vec3(0.0, 0.0, -3.0), 0.5);
-    sPointLight pointLights[2];
-    initPointLight(pointLights[0], vec3(1.25, 1.25, 0.0), vec3(1.0, 1.0, 1.0), 10.0);
-    initPointLight(pointLights[1], vec3(-1.25, -1.25, 0.0), vec3(1.0, 1.0, 1.0), 100.0);
+    
+    // Calculate mouse position relative to center of viewport
+    vec2 mousePos = vec2(mouse.x - 0.5 * res.x, mouse.y - 0.5 * res.y)  / res;
+    
+    // Initialize lights
+    sPointLight pointLights[3];
+    initPointLight(pointLights[0], vec3(cos(time) * 1.25, sin(time) * 1.25, 0.0), vec3(1.0, 1.0, 1.0), 10.0);
+    initPointLight(pointLights[1], vec3(mousePos.x * 10.0, mousePos.y * 10.0, 0.0), vec3(1.0, 1.0, 1.0), 100.0);
+    initPointLight(pointLights[2], vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 1.0), 3.0 * cos(PI * time) + 3.0);
     
     // Testing proc sphere
     vec3 dp;
@@ -177,7 +213,9 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
         float globalAmbientIntensity = 0.05;
         vec3 globalAmbientColor = vec3(1.0, 1.0, 1.0);
         
+        // Calculates the sum of the effect of all lights on the sphere
         vec3 lightingInstensitySum = vec3(0.0, 0.0, 0.0);
+        //for (int i = 0; i < pointLights.length(); i++) {
         for (int i = pointLights.length() - 1; i >= 0; --i) {
             float diffuseIntensity, specularIntensity;
         	calcPointLight(diffuseIntensity, specularIntensity, pointLights[i], sphere, position, rayOrigin);
@@ -216,5 +254,5 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     	             fragCoord, iResolution.xy);
     calcRay(rayDirection, rayOrigin, vec3(0.0), viewport);
     
-    fragColor += calcColor(rayDirection, rayOrigin);
+    fragColor += calcColor(rayDirection, rayOrigin, iTime, iMouse, iResolution.xy);
 }
