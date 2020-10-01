@@ -179,7 +179,17 @@ color4 calcColor(in sViewport vp, in sRay ray)
     //return color4(lengthSq(vp.viewportPoint.xy) >= 0.25); // pass
     //return color4(vp.uv, 0.0, 0.0);
     //return color4(vp.ndc, 0.0, 0.0);
-    return vp.viewportPoint;
+    //return vp.viewportPoint;
+    //return vec4(1.0, 1.0, 1.0, 1.0);
+    
+    //sCoord loc = vp.uv;	// Relative to screen
+    sCoord px = vp.pixelCoord;
+    sDCoord res = iChannelResolution[0].xy;
+    sScalar ratio = res.y * vp.resolutionInv.y;
+    sCoord loc = px / res;	// Relative to texture
+    loc = ratio * loc;	// Zoom
+    //return texture(iChannel0, loc).rrrr;	// Grayscale
+    return texture(iChannel0, loc);
 }
 
 
