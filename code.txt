@@ -169,27 +169,40 @@ void initRayOrtho(out sRay ray,
 //------------------------------------------------------------
 // RENDERING FUNCTIONS
 
+// crossFade: fade from one texture to another over time
+//    inputPos:		the normalized position of the input pixel [0, 1)
+//    time:			time since start
+vec2 crossFade(in vec2 inputPos, in float time) {
+    vec2 outputPos;	// A vec2 storing the output pixel normalized coordinate [0, 1)
+    outputPos = inputPos; // Set the output coordinate to the input one so as to modify it
+    return outputPos;
+}
+
+// waves: make the texture do the wave
+//    inputPos:		the normalized position of the input pixel [0, 1)
+//    time:			time since start
+vec2 waves(in vec2 inputPos, in float time) {
+    vec2 outputPos;	// A vec2 storing the output pixel normalized coordinate [0, 1)
+    outputPos = inputPos; // Set the output coordinate to the input one so as to modify it
+    outputPos.y += 0.1 * sin(time + 5.0 * inputPos.x);	// Distort the texture y position by shifting it up and down by the sine of the time plus the current pixel x position
+    outputPos.x += 0.1 * cos(time + 5.0 * inputPos.y);	// Distort the texture x position by shifting it left and right by the sine of the time plus the current pixel y position
+    return outputPos;
+}
+
 // calcColor: calculate the color of current pixel
 //	  vp:  input viewport info
 //	  ray: input ray info
-color4 calcColor(in sViewport vp, in sRay ray)
+color4 calcColor(in sViewport vp, in sRay ray, in float time)
 {
-    // test inputs
-    //return color4(ray.direction.xyz == vp.viewportPoint.xyz); // pass
-    //return color4(lengthSq(vp.viewportPoint.xy) >= 0.25); // pass
-    //return color4(vp.uv, 0.0, 0.0);
-    //return color4(vp.ndc, 0.0, 0.0);
-    //return vp.viewportPoint;
-    //return vec4(1.0, 1.0, 1.0, 1.0);
+    sCoord px = vp.pixelCoord;	// A coordinate (vec2) storing the current pixel location
+    sDCoord res = iChannelResolution[0].xy;	// A measurement (vec2) storing the resolution of the resolution of the texture
+    sScalar ratio = res.y * vp.resolutionInv.y;	// A scalar (float) storing the ratio of the texture y resolution to the viewport y resolution
+    sCoord loc = px / res;	// A coordinate (vec2) storing the normalized pixel location [0, 1)
+    loc = ratio * loc;	// Fill the viewport with the texture, i.e. zoom the texture in so it is always the same size as the viewport
     
-    //sCoord loc = vp.uv;	// Relative to screen
-    sCoord px = vp.pixelCoord;
-    sDCoord res = iChannelResolution[0].xy;
-    sScalar ratio = res.y * vp.resolutionInv.y;
-    sCoord loc = px / res;	// Relative to texture
-    loc = ratio * loc;	// Zoom
-    //return texture(iChannel0, loc).rrrr;	// Grayscale
-    return texture(iChannel0, loc);
+    loc = crossFade(loc, time);
+    
+    return texture(iChannel0, loc);	// Return the color (vec4) at the calculated pixel of the texture. The location of the pixel is a range [0, 1)
 }
 
 
@@ -214,5 +227,5 @@ void mainImage(out color4 fragColor, in sCoord fragCoord)
     // render
     initViewport(vp, viewportHeight, focalLength, fragCoord, iResolution.xy);
     initRayPersp(ray, eyePosition, vp.viewportPoint.xyz);
-    fragColor += calcColor(vp, ray);
+    fragColor += calcColor(vp, ray, iTime);
 }
