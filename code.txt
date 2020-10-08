@@ -1,4 +1,5 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+// Modified by Michael Kashian
 
 //------------------------------------------------------------
 // TYPE ALIASES & UTILITY FUNCTIONS
@@ -169,6 +170,7 @@ void initRayOrtho(out sRay ray,
 //------------------------------------------------------------
 // RENDERING FUNCTIONS
 
+// Function by Michael Kashian
 // waves: make the texture do the wave
 //    inputPos:		the normalized position of the input pixel [0, 1)
 //    time:			time since start
@@ -180,10 +182,12 @@ vec2 waves(in vec2 inputPos, in float time) {
     return outputPos;
 }
 
+// Function by Daniel Buckstein
+// Modified by Michael Kashian
 // calcColor: calculate the color of current pixel
 //	  vp:  input viewport info
 //	  ray: input ray info
-color4 calcColor(in sViewport vp, in sRay ray, in float time)
+color4 calcColor(in sViewport vp, in sRay ray, in float time, in sampler2D Channel0, in sampler2D Channel1, in samplerCube Channel2)
 {
     
     // Variable calculations
@@ -195,8 +199,8 @@ color4 calcColor(in sViewport vp, in sRay ray, in float time)
 	
     // Cross Fade
 	loc = ratio * loc;	// Fill the viewport with the texture, i.e. zoom the texture in so it is always the same size as the viewport
-    vec4 startTexture = texture(iChannel0, loc);	// The starting texture
-    vec4 endTexture = texture(iChannel1, loc);	// The ending texture
+    vec4 startTexture = texture(Channel0, loc);	// The starting texture
+    vec4 endTexture = texture(Channel1, loc);	// The ending texture
     return mix(startTexture, endTexture, min(1.0, time));	// Return the color (vec4) at the calculated pixel of the texture. The location of the pixel is a range [0, 1)
     
     
@@ -204,7 +208,7 @@ color4 calcColor(in sViewport vp, in sRay ray, in float time)
     // Waves
 	loc = ratio * loc;	// Fill the viewport with the texture, i.e. zoom the texture in so it is always the same size as the viewport
     loc = waves(loc, time);	// Sets the location the on the texture pixel is "looking at" to the output from the waves function
-    return texture(iChannel0, loc);	// Return the color (vec4) at the calculated pixel of the texture. The location of the pixel is a range [0, 1)
+    return texture(Channel0, loc);	// Return the color (vec4) at the calculated pixel of the texture. The location of the pixel is a range [0, 1)
 	*/
     
     /*
@@ -229,7 +233,7 @@ color4 calcColor(in sViewport vp, in sRay ray, in float time)
     float diffuseIntensity = diffuseCoefficient * attenuatedIntensity;
     
     loc = ratio * loc;	// Fill the viewport with the texture, i.e. zoom the texture in so it is always the same size as the viewport
-    vec4 surfaceColor = texture(iChannel0, loc);
+    vec4 surfaceColor = texture(Channel0, loc);
     vec4 finalColor = diffuseIntensity * surfaceColor * lightColor;
     return finalColor;
 	*/
@@ -237,31 +241,35 @@ color4 calcColor(in sViewport vp, in sRay ray, in float time)
     /*
     // Cube Map
     vec3 loc = ray.direction.xyz;
+	// Rotation about the x axis
     float angleX = 0.0;
     mat3 rotationX = mat3(
         vec3(1.0, 0.0, 0.0),
         vec3(0.0, cos(angleX), -sin(angleX)),
         vec3(0.0, sin(angleX), cos(angleX))
     );
+	// Rotation about the y axis
     float angleY = time;
     mat3 rotationY = mat3(
         vec3(cos(angleY), 0.0, sin(angleY)),
         vec3(0.0, 1.0, 0.0),
         vec3(-sin(angleY), 0.0, cos(angleY))
     );
+	// Rotation about the z axis
     float angleZ = 0.0;
     mat3 rotationZ = mat3(
         vec3(cos(angleZ), -sin(angleZ), 0.0),
         vec3(sin(angleZ), cos(angleZ), 0.0),
         vec3(0.0, 0.0, 1.0)
     );
+	// Multiply the location by the rotation matrices
     loc *= rotationX;
     loc *= rotationY;
     loc *= rotationZ;
     
-    loc.xy = waves(loc.xy, time);
+    loc.xy = waves(loc.xy, time);	// Apply the distortion effect
     
-    vec4 cubeTexture = texture(iChannel2, loc);
+    vec4 cubeTexture = texture(Channel2, loc);	// Get the texture at the location
     return cubeTexture;
 	*/
 }
@@ -270,6 +278,8 @@ color4 calcColor(in sViewport vp, in sRay ray, in float time)
 //------------------------------------------------------------
 // SHADERTOY MAIN
 
+// Function by Daniel Buckstein
+// Modified by Michael Kashian
 // mainImage: process the current pixel (exactly one call per pixel)
 //    fragColor: output final color for current pixel
 //    fragCoord: input location of current pixel in image (in pixels)
@@ -288,5 +298,5 @@ void mainImage(out color4 fragColor, in sCoord fragCoord)
     // render
     initViewport(vp, viewportHeight, focalLength, fragCoord, iResolution.xy);
     initRayPersp(ray, eyePosition, vp.viewportPoint.xyz);
-    fragColor += calcColor(vp, ray, iTime);
+    fragColor += calcColor(vp, ray, iTime, iChannel0, iChannel1, iChannel2);
 }
