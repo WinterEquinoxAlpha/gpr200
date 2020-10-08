@@ -169,15 +169,6 @@ void initRayOrtho(out sRay ray,
 //------------------------------------------------------------
 // RENDERING FUNCTIONS
 
-// crossFade: fade from one texture to another over time
-//    inputPos:		the normalized position of the input pixel [0, 1)
-//    time:			time since start
-vec2 crossFade(in vec2 inputPos, in float time) {
-    vec2 outputPos;	// A vec2 storing the output pixel normalized coordinate [0, 1)
-    outputPos = inputPos; // Set the output coordinate to the input one so as to modify it
-    return outputPos;
-}
-
 // waves: make the texture do the wave
 //    inputPos:		the normalized position of the input pixel [0, 1)
 //    time:			time since start
@@ -194,15 +185,46 @@ vec2 waves(in vec2 inputPos, in float time) {
 //	  ray: input ray info
 color4 calcColor(in sViewport vp, in sRay ray, in float time)
 {
+    // Variable calculations
     sCoord px = vp.pixelCoord;	// A coordinate (vec2) storing the current pixel location
     sDCoord res = iChannelResolution[0].xy;	// A measurement (vec2) storing the resolution of the resolution of the texture
     sScalar ratio = res.y * vp.resolutionInv.y;	// A scalar (float) storing the ratio of the texture y resolution to the viewport y resolution
     sCoord loc = px / res;	// A coordinate (vec2) storing the normalized pixel location [0, 1)
     loc = ratio * loc;	// Fill the viewport with the texture, i.e. zoom the texture in so it is always the same size as the viewport
     
-    loc = crossFade(loc, time);
+    // Cross fade
+    /*
+    vec4 startTexture = texture(iChannel0, loc);
+    vec4 endTexture = texture(iChannel1, loc);
+    return mix(startTexture, endTexture, min(1.0, time));	// Return the color (vec4) at the calculated pixel of the texture. The location of the pixel is a range [0, 1)
+    */
     
+    // Waves
+    /*
+    loc = waves(loc, time);	// Sets the location the on the texture pixel is "looking at" to the output from the waves function
     return texture(iChannel0, loc);	// Return the color (vec4) at the calculated pixel of the texture. The location of the pixel is a range [0, 1)
+	*/
+    
+    // Shading
+    vec3 surfacePosition = vec3(px / res, 0.0);
+    vec3 surfaceNormal = vec3(0.0, 0.0, 1.0);
+    vec3 lightPosition = vec3(0.5 * cos(2.0 * time) + 0.5 * vp.resolution.x / res.x, 0.5 * sin(2.0 * time) + 0.5 * vp.resolution.y / res.y, 0.2);
+    vec4 lightColor = vec4(1.0, 1.0, 1.0, 1.0);//(0.89, 0.55, 0.18, 1.0);
+    float intensity = 10.0;
+    
+    // Lambertian reflectance
+    // Diffuse coefficient
+    vec3 lightVector = normalize(lightPosition - surfacePosition);
+    float diffuseCoefficient = dot(surfaceNormal, lightVector);
+    // Attenuated intensity
+    float d = distance(lightPosition, surfacePosition);
+    float attenuatedIntensity = 1.0 / (1.0 + d / intensity + (d * d) / (intensity * intensity));
+    // Diffuse intensity
+    float diffuseIntensity = diffuseCoefficient * attenuatedIntensity;
+    
+    vec4 surfaceColor = texture(iChannel0, loc);
+    vec4 finalColor = diffuseIntensity * surfaceColor * lightColor;
+    return finalColor;
 }
 
 
