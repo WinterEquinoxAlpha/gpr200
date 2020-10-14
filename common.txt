@@ -36,8 +36,11 @@
 // 	(this is non-spatial so neither a point nor vector)
 #define color4 vec4
 
-// The Gaussian blur convolution kernel
-const float kernel[5] = float[5](1.0, 4.0, 6.0, 4.0, 1.0);
+// The 5 long Gaussian blur convolution kernel
+//const float kernel[5] = float[5](1.0, 4.0, 6.0, 4.0, 1.0);
+
+// The 4 long Gaussian blur convolution kernel
+const float kernel[4] = float[4](1.0, 3.0, 3.0, 1.0);
 
 // asPoint: promote a 3D vector into a 4D vector 
 //	representing a point in space (w=1)

@@ -1,12 +1,21 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     sCoord uv = fragCoord / iChannelResolution[0].xy;
-    vec2 ps = 1.0 / iResolution.xy;
     
+    vec2 ps = 0.5 * (1.0 / iResolution.xy);
+    vec4 col1 = kernel[0] * texture(iChannel0, vec2(uv.x, uv.y - 3.0 * ps.x));
+    vec4 col2 = kernel[1] * texture(iChannel0, vec2(uv.x, uv.y - ps.x));
+    vec4 col3 = kernel[2] * texture(iChannel0, vec2(uv.x, uv.y + ps.x));
+    vec4 col4 = kernel[3] * texture(iChannel0, vec2(uv.x, uv.y + 3.0 * ps.x));
+    fragColor = 0.125 * (col1 + col2 + col3 + col4);
+    
+    /*
+	vec2 ps = 1.0 / iResolution.xy;
     vec4 col1 = kernel[0] * texture(iChannel0, vec2(uv.x, uv.y - 2.0 * ps.x));
     vec4 col2 = kernel[1] * texture(iChannel0, vec2(uv.x, uv.y - ps.x));
     vec4 col3 = kernel[2] * texture(iChannel0, vec2(uv.x, uv.y));
     vec4 col4 = kernel[3] * texture(iChannel0, vec2(uv.x, uv.y + ps.x));
     vec4 col5 = kernel[4] * texture(iChannel0, vec2(uv.x, uv.y + 2.0 * ps.x));
     fragColor = 0.0625 * (col1 + col2 + col3 + col4 + col5);
+	*/
 }
