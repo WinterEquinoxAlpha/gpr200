@@ -2,6 +2,12 @@
 //  -> COMMON TAB (shared with all other tabs)
 
 //------------------------------------------------------------
+// CONSTANT DEFINITIONS
+
+// Euler's number
+#define EULER 0.5772156649
+
+//------------------------------------------------------------
 // TYPE ALIASES & UTILITY FUNCTIONS
 
 // sScalar: alias for a 1D scalar (non-vector)

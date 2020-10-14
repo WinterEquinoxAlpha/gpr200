@@ -1,4 +1,6 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    fragColor = vec4(0.0,0.0,1.0,1.0);
+    sCoord uv = fragCoord / iChannelResolution[0].xy;
+    fragColor = texture(iChannel0, uv);
+    fragColor = pow(fragColor, vec4(8.0 * EULER));
 }
