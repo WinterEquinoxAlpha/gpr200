@@ -1,6 +1,6 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    sCoord uv = fragCoord / iChannelResolution[0].xy;
-    fragColor = texture(iChannel0, uv);
-    fragColor = pow(fragColor, vec4(8.0 * EULER));
+    sCoord uv = fragCoord / iChannelResolution[0].xy;	// Normalized texture coordinates
+    fragColor = texture(iChannel0, uv);		// Gets the texture
+    fragColor = pow(fragColor, vec4(8.0 * EULER));	// Performs the lightpass filter
 }

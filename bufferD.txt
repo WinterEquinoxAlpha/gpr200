@@ -1,13 +1,14 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    sCoord uv = fragCoord / iChannelResolution[0].xy;
+    sCoord uv = fragCoord / iChannelResolution[0].xy;	// Normalized texture coordinates
     
-    vec2 ps = 0.5 * (1.0 / iResolution.xy);
+    vec2 ps = 0.5 * (1.0 / iResolution.xy);		// Half pixel size in texture coordinates
+    // Retrieve the colors from the texture in a vertical line and multiply them by the kernel
     vec4 col1 = kernel[0] * texture(iChannel0, vec2(uv.x, uv.y - 3.0 * ps.x));
     vec4 col2 = kernel[1] * texture(iChannel0, vec2(uv.x, uv.y - ps.x));
     vec4 col3 = kernel[2] * texture(iChannel0, vec2(uv.x, uv.y + ps.x));
     vec4 col4 = kernel[3] * texture(iChannel0, vec2(uv.x, uv.y + 3.0 * ps.x));
-    fragColor = 0.125 * (col1 + col2 + col3 + col4);
+    fragColor = 0.125 * (col1 + col2 + col3 + col4);	// Combine the colors
     
     /*
 	vec2 ps = 1.0 / iResolution.xy;

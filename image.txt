@@ -9,8 +9,7 @@
 //    fragCoord: input location of current pixel in image (in pixels)
 void mainImage(out color4 fragColor, in sCoord fragCoord)
 {
-    // setup
-    // test UV for input image
+    // Normalized texture coordinates
     sCoord uv = fragCoord / iChannelResolution[0].xy;
     
     // Store the results from the texture channels
