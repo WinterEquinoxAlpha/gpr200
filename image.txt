@@ -13,7 +13,13 @@ void mainImage(out color4 fragColor, in sCoord fragCoord)
     // test UV for input image
     sCoord uv = fragCoord / iChannelResolution[0].xy;
     
-    // TESTING
-    // set iChannel0 to 'Misc/Buffer A' and fetch sample
-    fragColor = texture(iChannel1, uv);
+    // Store the results from the texture channels
+    vec4 orig = texture(iChannel0, uv);
+    vec4 blur = texture(iChannel1, uv);
+    
+    // Perform composition
+    fragColor = orig + blur;							// Addition
+    //fragColor = mix(orig, blur, 0.5);					// Mixing
+    //fragColor = 1.0 - (1.0 - orig) * (1.0 - blur);	// Screen blend
+    //fragColor = orig / (1.0 - blur);					// Color dodge
 }
