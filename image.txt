@@ -21,4 +21,7 @@ void mainImage(out color4 fragColor, in sCoord fragCoord)
     //fragColor = mix(orig, blur, 0.5);					// Mixing
     //fragColor = 1.0 - (1.0 - orig) * (1.0 - blur);	// Screen blend
     //fragColor = orig / (1.0 - blur);					// Color dodge
+    //fragColor = orig * blur;							// Multiply
+    //fragColor = orig + blur - 1.0;					// Linear burn
+    //fragColor = blur + 2.0 * orig - 1.0;				// Linear light
 }
