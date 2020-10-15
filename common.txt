@@ -1,11 +1,18 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
 //  -> COMMON TAB (shared with all other tabs)
+// Modified by Michael Kashian
 
 //------------------------------------------------------------
 // CONSTANT DEFINITIONS
 
 // Euler's number
 #define EULER 0.5772156649
+
+// The 5 long Gaussian blur convolution kernel
+//const float kernel[5] = float[5](1.0, 4.0, 6.0, 4.0, 1.0);
+
+// The 4 long Gaussian blur convolution kernel
+const float kernel[4] = float[4](1.0, 3.0, 3.0, 1.0);
 
 //------------------------------------------------------------
 // TYPE ALIASES & UTILITY FUNCTIONS
@@ -35,12 +42,6 @@
 // color4: alias for RGBA color, which is non-spatial
 // 	(this is non-spatial so neither a point nor vector)
 #define color4 vec4
-
-// The 5 long Gaussian blur convolution kernel
-//const float kernel[5] = float[5](1.0, 4.0, 6.0, 4.0, 1.0);
-
-// The 4 long Gaussian blur convolution kernel
-const float kernel[4] = float[4](1.0, 3.0, 3.0, 1.0);
 
 // asPoint: promote a 3D vector into a 4D vector 
 //	representing a point in space (w=1)

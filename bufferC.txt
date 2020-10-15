@@ -1,3 +1,5 @@
+// Code by Michael Kashian
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     sCoord uv = fragCoord / iChannelResolution[0].xy;	// Normalized texture coordinates

@@ -1,5 +1,6 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
 //  -> IMAGE TAB (final)
+// Modified by Michael Kashian
 
 //------------------------------------------------------------
 // SHADERTOY MAIN

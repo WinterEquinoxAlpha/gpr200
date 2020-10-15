@@ -1,5 +1,6 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
 //  -> BUFFER A TAB (scene)
+// Modified by Michael Kashian
 
 //------------------------------------------------------------
 // RENDERING FUNCTIONS
