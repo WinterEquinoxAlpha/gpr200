@@ -1,0 +1,14 @@
+#version 300 es
+#ifdef GL_ES
+precision highp float; // If GLSL ES is detected, add required precision setting.
+#endif // GL_ES
+
+layout (location = 0) out vec4 rtFragColor;
+
+in vec4 vColor;
+
+void main()
+{
+    //rtFragColor = vec4(0.0, 1.0, 1.0, 1.0);
+    rtFragColor = vColor;
+}
