@@ -1,14 +1,45 @@
-#version 300 es
+#version 450
 
 layout (location = 0) in vec4 aPosition;
+layout (location = 1) in vec3 aNormal;
 
-out vec4 vColor;
+// Transform Uniforms
+uniform mat4 uModelMat;
+uniform mat4 uViewMat;
+uniform mat4 uProjMat;
+uniform mat4 uViewProjMat;
 
-void main()
-{
-    gl_Position = aPosition;
+// Varying
+// Per-Vertex: final color
+//out vec4 vColor;
+// Per-Fragment: individual components
+out vec4 vNormal;
+
+void main() {
+	/*
+	// Object > World
+	vec4 pos_world = uModelMat * aPosition;
+	// World > View
+	vec4 pos_camera = uViewMat * pos_world;
+	// View > Clip
+	vec4 pos_clip = uProjMat * pos_camera;
+	*/
+	
+	// Final Position Pipeline
+	mat4 modelViewMat = uViewMat * uModelMat;
+	vec4 pos_camera = modelViewMat * aPosition;
+	vec4 pos_clip = uProjMat * pos_camera;
+	// Required to set this value
+    gl_Position = pos_clip;
     
+    // Normal Pipeline
+    mat3 normalMatrix = transpose(inverse(mat3(modelViewMat)));
+    //vec4 norm_camera = normalMatrix * vec4(aNormal, 0.0);
+    vec3 norm_camera = normalMatrix * aNormal;
+    // Per-Vertex
     //vColor = vec4(1.0, 0.5, 0.0, 1.0);
-    
-    vColor = aPosition;
+    //vColor = vec4(aNormal * 0.5 + 0.5, 1.0);
+    // Per-Fragment
+    //vNormal = vec4(aNormal, 1.0);
+    vNormal = vec4(norm_camera, 0.0);
 }
