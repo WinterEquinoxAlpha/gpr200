@@ -10,7 +10,55 @@ layout (location = 0) out vec4 rtFragColor;
 //in vec4 vColor;
 // Per-Fragment: Recieve requirementes for final color
 in vec4 vNormal;
+
 in vec4 vTexcoord;
+in vec4 vPosition;
+in vec4 vPos_clip;
+
+// A struct containing variables for a point light
+struct sPointLight {
+    vec4 center;
+    vec3 color;
+    float intensity;
+};
+
+// Initializes a point light struct variables with the data passed into the function
+//		pl: the point light to be initialized
+//		center: the position of the center of the light
+//		color: the color of the light
+//		intensity: the intensity of the light
+void initPointLight(out sPointLight pl, in vec3 center, in vec3 color, in float intensity) {
+    pl.center = vec4(center, 1.0);
+    pl.color = color;
+    pl.intensity = intensity;
+}
+
+// Returns the dot product of a 2D vector
+// Original code by Daniel Buckstein
+float lenSq(vec2 x) {
+    return dot(x, x);
+}
+
+// Returns the dot product of a 3D vector
+// Original code by Daniel Buckstein
+// Modified by Michael Kashian
+float lenSq(vec3 x) {
+    return dot(x, x);
+}
+
+// Returns the input variable raised to the 256 power
+float pow256(in float specularCoefficient) {
+    float sc = specularCoefficient;
+    sc *= sc;
+    sc *= sc;
+    sc *= sc;
+    sc *= sc;
+    sc *= sc;
+    sc *= sc;
+    sc *= sc;
+    sc *= sc;
+    return sc;
+}
 
 void main()
 {
@@ -23,5 +71,55 @@ void main()
     vec4 N = normalize(vNormal);
     //rtFragColor = vec4(N.xyz * 0.5 + 0.5, 1.0);
     
-    rtFragColor = vTexcoord;
+    sPointLight pointLights[3];
+    initPointLight(pointLights[0], vec3(0.0, 0.0, 2.0), vec3(1.0, 1.0, 1.0), 10.0);
+    initPointLight(pointLights[1], vec3(-1.0, 0.0, 2.0), vec3(0.0, 1.0, 1.0), 10.0);    
+    initPointLight(pointLights[2], vec3(0.0, 1.0, 2.0), vec3(1.0, 0.0, 0.0), 10.0);    
+    
+    // Testing proc sphere
+    vec3 sphere_center = vec3(0.0, 0.0, 0.0);
+    float sphere_radius = 1.0;
+    float diffuseIntensity, specularIntensity;
+    vec3 lightingInstensitySum;
+    vec3 specularColor = vec3(1.0, 1.0, 1.0);
+    
+    vec3 dp;
+    dp.xy = vPosition.xy - sphere_center.xy;
+    float lSq = lenSq(dp.xy);
+    float rSq = sphere_radius * sphere_radius;
+    if (lSq <= rSq) {
+        dp.z = rSq - lSq;
+        vec3 position = sphere_center.xyz + vec3(dp.x, dp.y, sqrt(dp.z));
+        
+        for (int i = pointLights.length() - 1; i >= 0; --i) {
+	        // Lambertian Reflectance
+		    // Diffuse Coefficient
+		    vec3 unitSurfaceNormal = N.xyz;
+		    vec3 LightVector = pointLights[i].center.xyz - position;
+		    float d = sqrt(lenSq(LightVector));
+			vec3 unitLightVector = LightVector / d;
+		    float diffuseCoefficient = max(0.0, dot(unitSurfaceNormal, unitLightVector));
+		    
+		    // Attenuated Intensity
+		    float inverseIntensity = 1.0 / pointLights[i].intensity;
+		    float attenuatedIntensity = 1.0 / (1.0 + (d * inverseIntensity) + ((d * d) * (inverseIntensity * inverseIntensity)));
+		    
+		    // Diffuse Intensity
+		    diffuseIntensity = diffuseCoefficient * attenuatedIntensity;
+		    
+		    // Blinn-Phong Reflectance
+		    // Specular Coefficient
+		    vec3 viewVector = normalize(vPos_clip.xyz - position);
+		    vec3 halfwayVector = normalize(unitLightVector + viewVector);
+		    float specularCoefficient = max(0.0, dot(unitSurfaceNormal, halfwayVector));
+			
+		    // Specular Intensity
+		    specularIntensity = pow256(specularCoefficient);
+		    lightingInstensitySum += ((diffuseIntensity * vTexcoord.xyz) + (specularIntensity * specularColor)) * pointLights[i].color;
+		}
+	}
+	
+	float globalAmbientIntensity = 0.05;
+	vec3 globalAmbientColor = vec3(1.0, 1.0, 1.0);
+    rtFragColor = vec4((globalAmbientIntensity * globalAmbientColor) + lightingInstensitySum, 1.0);
 }

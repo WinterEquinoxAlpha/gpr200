@@ -9,13 +9,17 @@ uniform mat4 uModelMat;
 uniform mat4 uViewMat;
 uniform mat4 uProjMat;
 uniform mat4 uViewProjMat;
+uniform sampler2D tex0;
 
 // Varying
 // Per-Vertex: final color
 //out vec4 vColor;
 // Per-Fragment: individual components
 out vec4 vNormal;
+
+out vec4 vPosition;
 out vec4 vTexcoord;
+out vec4 vPos_clip;
 
 void main() {
 	/*
@@ -28,9 +32,11 @@ void main() {
 	*/
 	
 	// Final Position Pipeline
+	vPosition = aPosition;
 	mat4 modelViewMat = uViewMat * uModelMat;
 	vec4 pos_camera = modelViewMat * aPosition;
 	vec4 pos_clip = uProjMat * pos_camera;
+	vPos_clip = pos_clip;
 	// Required to set this value
     gl_Position = pos_clip;
     //gl_Position = uProjMat * modelViewMat * aTexcoord;
@@ -47,11 +53,12 @@ void main() {
     vNormal = vec4(norm_camera, 0.0);
     
     // Texcoord Pipeline
-    mat4 atlasMap = mat4(0.5, 0.0, 0.0, 0.0,
-    					 0.0, 0.5, 0.0, 0.0,
+    mat4 atlasMap = mat4(1.0, 0.0, 0.0, 0.0,
+    					 0.0, 1.0, 0.0, 0.0,
     					 0.0, 0.0, 1.0, 0.0,
-    					 0.25, 0.25, 0.25, 1.0);
+    					 0.0, 0.0, 0.0, 1.0);
     vec4 uv_atlas = atlasMap * aTexcoord;
     //vTexcoord = aTexcoord;
-    vTexcoord = uv_atlas;
+    vec4 texture0 = texture(tex0, uv_atlas.xy);
+    vTexcoord = texture0;
 }
