@@ -18,7 +18,7 @@ out vec4 vNormal;
 
 out vec4 vPosition;
 out vec4 vTexcoord;
-out vec4 vPos_clip;
+out vec4 vPos_camera;
 
 void main() {
 	/*
@@ -35,7 +35,7 @@ void main() {
 	mat4 modelViewMat = uViewMat * uModelMat;
 	vec4 pos_camera = modelViewMat * aPosition;
 	vec4 pos_clip = uProjMat * pos_camera;
-	vPos_clip = pos_clip;
+	vPos_camera = pos_camera;
 	// Required to set this value
     gl_Position = pos_clip;
     //gl_Position = uProjMat * modelViewMat * aTexcoord;
