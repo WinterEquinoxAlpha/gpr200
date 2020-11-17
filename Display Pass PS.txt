@@ -6,15 +6,20 @@ precision highp float; // If GLSL ES is detected, add required precision setting
 layout (location = 0) out vec4 rtFragColor;
 
 // Varying
-in vec4 vTexcoord;
 in vec4 vPosition;
 
 // Uniforms
 uniform sampler2D tex4;
 uniform sampler2D tex5;
 
+vec4 screenBlend(vec4 a, vec4 b) {
+	return 1.0 - ((1.0 - a) * (1.0 - b));
+}
+
 void main() {
-	vec4 texture4 = texture(tex4, vTexcoord.xy);
-	vec4 texture5 = texture(tex5, vTexcoord.xy);
-	rtFragColor = texture4 + texture5;
+	vec4 ndc = vPosition / vPosition.w;
+	vec4 screen = ndc * 0.5 + 0.5;
+	vec4 texture4 = texture(tex4, screen.xy);
+	vec4 texture5 = texture(tex5, screen.xy);
+	rtFragColor = screenBlend(texture4, texture5);
 }
